@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_REPO = 'https://github.com/alexiva10/SQMA_Ivanescu_Alexandru.git'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo 'Checking out code from GitHub...'
+                git branch: 'main', url: "${GIT_REPO}"
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing Ruby and dependencies...'
+                sh '''
+                if ! which ruby > /dev/null; then
+                    echo "Ruby not found. Installing Ruby..."
+                    sudo apt-get update
+                    sudo apt-get install -y ruby-full
+                fi
+                echo "Ruby Version: $(ruby --version)"
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                echo 'Running Ruby tests...'
+                sh '''
+                ruby calc.rb
+                ruby car.rb
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs.'
+        }
+    }
+}
